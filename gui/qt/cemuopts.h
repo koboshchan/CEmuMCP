@@ -15,6 +15,8 @@ struct CEmuOpts {
     bool useSettings;
     bool reset;
     bool ipcOnly;
+    bool mcpEnabled;
+    QString mcpId;
     QString romFile;
     QString autotesterFile;
     QString settingsFile;

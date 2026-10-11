@@ -65,3 +65,7 @@ gui/qt/capture/libpng*
 gui/qt/CEmu.build/
 gui/qt/cmake-build-*/
 gui/qt/out/
+/build/
+
+# cemu-mcp Python server venv
+mcp/.venv/

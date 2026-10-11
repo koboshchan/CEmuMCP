@@ -2,6 +2,8 @@
 #include "ui_mainwindow.h"
 #include "sendinghandler.h"
 #include "dockwidget.h"
+#include "mcpserver.h"
+#include "mcpdock.h"
 #include "utils.h"
 #include "keypad/qtkeypadbridge.h"
 
@@ -86,6 +88,7 @@ const QString MainWindow::SETTING_WINDOW_VISUALIZER_DOCKS   = QStringLiteral("Wi
 const QString MainWindow::SETTING_WINDOW_VISUALIZER_CONFIG  = QStringLiteral("Window/visualizer_config");
 const QString MainWindow::SETTING_WINDOW_KEYHISTORY_DOCKS   = QStringLiteral("Window/keyhistory_docks");
 const QString MainWindow::SETTING_WINDOW_KEYHISTORY_CONFIG  = QStringLiteral("Window/keyhistory_config");
+const QString MainWindow::SETTING_WINDOW_MCP_ENABLED        = QStringLiteral("Window/mcp_enabled");
 const QString MainWindow::SETTING_CAPTURE_FRAMESKIP         = QStringLiteral("Capture/frameskip");
 const QString MainWindow::SETTING_CAPTURE_OPTIMIZE          = QStringLiteral("Capture/optimize");
 const QString MainWindow::SETTING_SLOT_NAMES                = QStringLiteral("Slot/names");
@@ -552,6 +555,7 @@ void MainWindow::setUIDocks() {
     setMemDocks();
     setVisualizerDocks();
     setKeyHistoryDocks();
+    addMcpDock();
 
     m_menuDebug->addSeparator();
     m_menuDebug->addAction(m_actionAddMemory);
@@ -1147,6 +1151,41 @@ void MainWindow::addKeyHistoryDock(const QString &magic, int size) {
         dw->activateWindow();
         dw->raise();
     }
+}
+
+void MainWindow::addMcpDock() {
+    if (m_mcpDock) {
+        return;
+    }
+
+    m_mcpServer = new McpServer(this, this);
+    m_mcpDock = new McpDockWidget(this);
+
+    DockWidget *dw = new DockWidget(tr("MCP Automation"), this);
+    dw->makeCloseableFloat(true);
+    dw->setState(m_uiEditMode);
+    dw->setWidget(m_mcpDock);
+    addDockWidget(Qt::RightDockWidgetArea, dw);
+
+    QAction *tvAction = dw->toggleViewAction();
+    tvAction->setIcon(m_iconLcd);
+    m_menuDocks->addAction(tvAction);
+
+    connect(m_mcpServer, &McpServer::logMessage, m_mcpDock, &McpDockWidget::addLogLine);
+    connect(m_mcpServer, &McpServer::listeningChanged, this, [this](bool listening) {
+        m_mcpDock->setListening(listening, m_mcpServer->socketName());
+    });
+    connect(m_mcpServer, &McpServer::clientCountChanged, m_mcpDock, &McpDockWidget::setClientCount);
+    connect(m_mcpDock, &McpDockWidget::enabledToggled, this, [this](bool enabled) {
+        if (enabled) {
+            m_mcpServer->start(opts.mcpId.isEmpty() ? opts.idString : opts.mcpId);
+        } else {
+            m_mcpServer->stop();
+        }
+        if (m_setup) {
+            m_config->setValue(SETTING_WINDOW_MCP_ENABLED, enabled);
+        }
+    });
 }
 
 void MainWindow::setVersion() const {

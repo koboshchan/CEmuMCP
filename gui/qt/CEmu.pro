@@ -271,15 +271,17 @@ SOURCES += \
     keyhistorywidget.cpp \
     tablewidget.cpp \
     gotodialog.cpp \
-    basicdebugger.cpp
+    basicdebugger.cpp \
+    mcpserver.cpp \
+    mcpdock.cpp
 
 linux|macx: SOURCES += ../../core/os/os-linux.c
 win32: SOURCES += ../../core/os/os-win32.c win32-console.cpp
 win32: LIBS += -lpsapi
 
 
-macx: SOURCES += os/mac/kdmactouchbar.mm
-macx: HEADERS += os/mac/kdmactouchbar.h os/mac/kdmactouchbar_global.h
+macx: SOURCES += os/mac/kdmactouchbar.mm os/mac/appnap.mm
+macx: HEADERS += os/mac/kdmactouchbar.h os/mac/kdmactouchbar_global.h os/mac/appnap.h
 
 
 # This doesn't exist, but Qt Creator ignores that
@@ -363,7 +365,9 @@ HEADERS  += \
     ../../core/bus.h \
     keyhistorywidget.h \
     tablewidget.h \
-    gotodialog.h
+    gotodialog.h \
+    mcpserver.h \
+    mcpdock.h
 
 FORMS    += \
     mainwindow.ui \

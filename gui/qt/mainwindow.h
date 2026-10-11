@@ -89,9 +89,13 @@ signals:
 namespace Ui { class MainWindow; }
 
 class LcdDebugWidget;
+class McpServer;
+class McpDockWidget;
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
+
+    friend class McpServer;
 
 public:
     enum class IpcSetupResult {
@@ -638,6 +642,7 @@ private:
     void addMemDock(const QString &magic, int bytes, bool ascii);
     void addVisualizerDock(const QString &magic, const QString &config);
     void addKeyHistoryDock(const QString &magic, int size);
+    void addMcpDock();
 
     // versions
     void setVersion() const;
@@ -877,6 +882,8 @@ private:
     QStringList m_docksVisualizer;
     QStringList m_docksVisualizerConfig;
     QList<DockWidget*> m_dockPtrs;
+    McpServer *m_mcpServer = nullptr;
+    McpDockWidget *m_mcpDock = nullptr;
     QSettings *m_config = nullptr;
     QPointer<HexWidget> m_memWidget = nullptr;
 
@@ -986,6 +993,7 @@ private:
     static const QString SETTING_WINDOW_VISUALIZER_CONFIG;
     static const QString SETTING_WINDOW_KEYHISTORY_DOCKS;
     static const QString SETTING_WINDOW_KEYHISTORY_CONFIG;
+    static const QString SETTING_WINDOW_MCP_ENABLED;
     static const QString SETTING_CAPTURE_FRAMESKIP;
     static const QString SETTING_CAPTURE_OPTIMIZE;
     static const QString SETTING_SLOT_NAMES;
