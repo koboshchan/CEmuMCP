@@ -9,6 +9,10 @@
 #include <QtGui/QFontDatabase>
 #include <QtWidgets/QStyleFactory>
 
+#ifdef Q_OS_MACOS
+# include "os/mac/appnap.h"
+#endif
+
 int main(int argc, char *argv[]) {
 
 #if QT_VERSION_MAJOR < 6 && defined(Q_OS_WIN)
@@ -16,6 +20,15 @@ int main(int argc, char *argv[]) {
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 #endif
     QApplication app(argc, argv);
+
+#ifdef Q_OS_MACOS
+    // Without this, macOS App Nap throttles the process (lower scheduling
+    // priority, coarser timers) whenever the window isn't focused/visible,
+    // which starves the emu thread and drags emulation speed down well
+    // below the configured rate - most noticeable during CPU-heavy work
+    // like large file transfers while unfocused.
+    disableAppNap();
+#endif
 
 #if defined(Q_OS_WIN)
     const QString kDesiredStyle = QStringLiteral("WindowsVista");
@@ -170,6 +183,15 @@ int main(int argc, char *argv[]) {
                 QCoreApplication::translate("main", "Reset CEmu completely and delete configuration files"));
     parser.addOption(resetOption);
 
+    QCommandLineOption mcpOption(QStringList() << QStringLiteral("mcp"),
+                QCoreApplication::translate("main", "Enable the MCP automation server dock on start."));
+    parser.addOption(mcpOption);
+
+    QCommandLineOption mcpIdOption(QStringList() << QStringLiteral("mcp-id"),
+                QCoreApplication::translate("main", "MCP automation server socket id (default: same as --id)."),
+                QCoreApplication::translate("main", "id"));
+    parser.addOption(mcpIdOption);
+
     // IPC hooks (can only use on an already running process)
 
     parser.process(app);
@@ -198,6 +220,8 @@ int main(int argc, char *argv[]) {
         opts.luaScripts.append(QFileInfo(script).absoluteFilePath());
     }
     opts.reset              = parser.isSet(resetOption);
+    opts.mcpEnabled         = parser.isSet(mcpOption);
+    opts.mcpId              = parser.value(mcpIdOption);
     if (parser.isSet(emuSpeed)) {
         opts.speed          = parser.value(emuSpeed).toInt();
         if (opts.speed < 0)   { opts.speed = 0; }

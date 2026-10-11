@@ -161,6 +161,8 @@ set(CEmu_Sources
     luaeditor.cpp luaeditor.h
     main.cpp
     mainwindow.cpp mainwindow.h mainwindow.ui
+    mcpserver.cpp mcpserver.h
+    mcpdock.cpp mcpdock.h
     memorywidget.cpp
     romselection.cpp romselection.h romselection.ui
     searchwidget.cpp searchwidget.h searchwidget.ui
@@ -305,6 +307,7 @@ if(APPLE)
         ../../core/usb/physical_macos.c
         os/mac/kdmactouchbar.h os/mac/kdmactouchbar.mm
         os/mac/kdmactouchbar_global.h
+        os/mac/appnap.h os/mac/appnap.mm
         ${app_icon_macos}
     )
     target_link_libraries(CEmu PRIVATE

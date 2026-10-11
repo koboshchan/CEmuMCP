@@ -4,6 +4,8 @@
 #include "sendinghandler.h"
 #include "visualizerwidget.h"
 #include "dockwidget.h"
+#include "mcpserver.h"
+#include "mcpdock.h"
 #include "basiccodeviewerwindow.h"
 #include "capture/animated-png.h"
 #include "keypad/qtkeypadbridge.h"
@@ -1532,6 +1534,13 @@ void MainWindow::setup() {
     optSend(opts, true);
     if (opts.speed != -1) {
         setEmuSpeed(opts.speed);
+    }
+
+    if (opts.mcpEnabled || (opts.useSettings && m_config->value(SETTING_WINDOW_MCP_ENABLED, false).toBool())) {
+        m_mcpServer->start(opts.mcpId.isEmpty() ? opts.idString : opts.mcpId);
+        if (opts.mcpEnabled && m_mcpDock && m_mcpDock->parentWidget()) {
+            m_mcpDock->parentWidget()->setVisible(true);
+        }
     }
 
     if (m_portableActivated) {
