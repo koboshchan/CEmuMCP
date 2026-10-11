@@ -11,6 +11,28 @@
 
 #ifdef Q_OS_MACOS
 # include "os/mac/appnap.h"
+# if QT_VERSION >= QT_VERSION_CHECK(6, 11, 0) && QT_VERSION < QT_VERSION_CHECK(6, 12, 0)
+#  include <QtGui/QAccessible>
+#  include <QtWidgets/QAbstractItemView>
+#  include <QtWidgets/QAccessibleWidget>
+# endif
+#endif
+
+#if defined(Q_OS_MACOS) && QT_VERSION >= QT_VERSION_CHECK(6, 11, 0) && QT_VERSION < QT_VERSION_CHECK(6, 12, 0)
+namespace {
+
+// Qt 6.11's Cocoa accessibility bridge can dereference a stale table-cell
+// interface while macOS copies the accessibility hierarchy. Keep CEmu's
+// item views represented as tables, but don't expose synthesized row/cell
+// selection nodes until the upstream Qt fix is available.
+QAccessibleInterface *cemuMacTableAccessibilityFactory(const QString &, QObject *object) {
+    if (auto *view = qobject_cast<QAbstractItemView *>(object)) {
+        return new QAccessibleWidget(view, QAccessible::Table);
+    }
+    return nullptr;
+}
+
+}
 #endif
 
 int main(int argc, char *argv[]) {
@@ -43,6 +65,10 @@ int main(int argc, char *argv[]) {
     QCoreApplication::setOrganizationName(QStringLiteral("cemu-dev"));
     QCoreApplication::setApplicationName(QStringLiteral("CEmu"));
     QCoreApplication::setApplicationVersion(QStringLiteral(CEMU_VERSION " (git: " CEMU_GIT_SHA ")"));
+
+#if defined(Q_OS_MACOS) && QT_VERSION >= QT_VERSION_CHECK(6, 11, 0) && QT_VERSION < QT_VERSION_CHECK(6, 12, 0)
+    QAccessible::installFactory(cemuMacTableAccessibilityFactory);
+#endif
 
     execPath = QCoreApplication::applicationFilePath();
 
