@@ -1,10 +1,11 @@
 [project]
 name = "cemu-mcp"
 version = "0.1.0"
-description = "MCP server for driving a live CEmu (TI-84 Plus CE emulator) window"
+description = "MCP server for driving Qt-free cemu-headless"
 requires-python = ">=3.10"
 dependencies = [
     "mcp>=1.2.0,<2.0.0",
+    "Pillow>=10.0,<13",
 ]
 
 [tool.uv]
